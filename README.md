@@ -1,6 +1,6 @@
 # Calidad del Agua — Saladillo
 
-Monitoreo de calidad de agua de red en Saladillo, Buenos Aires, Argentina: arsénico, nitratos, nitritos, fluoruro, metales pesados y parámetros bacteriológicos (coliformes totales, *Escherichia coli*, *Pseudomona aeruginosa*) sobre decenas de puntos de la red municipal (bombas, escuelas, jardines de infantes, domicilios). Pensado para publicarse en [wq.lemeit.ar](https://wq.lemeit.ar).
+Monitoreo de calidad de agua de red en Saladillo, Buenos Aires, Argentina: arsénico, nitratos, nitritos, fluoruro, metales pesados y parámetros bacteriológicos (coliformes totales, *Escherichia coli*, *Pseudomona aeruginosa*) sobre decenas de puntos de la red municipal (bombas, escuelas, jardines de infantes, domicilios). Publicado en [wq.lemeit.ar](https://wq.lemeit.ar).
 
 Es uno de tres proyectos de monitoreo ambiental que comparten la misma infraestructura de Cloudflare (Pages + Workers + D1), pensados para integrarse a futuro: [emas.lemeit.ar](https://emas.lemeit.ar) (meteorología), [aq.lemeit.ar](https://aq.lemeit.ar) (calidad del aire, sensores PurpleAir) y este (calidad del agua).
 
@@ -34,7 +34,7 @@ No hay tabla, índice ni nombres de archivo consistentes en ninguna de las dos p
 
 Pendiente (no incluido aún): metadata completa por protocolo (laboratorio, número de protocolo, cadena de custodia, hora de extracción) — los datos actuales solo tienen fuente, fecha y archivo de origen, porque la extracción CSV usada como base no capturó esos campos. La ingesta automatizada (ver "Ingesta automática de protocolos" abajo) sí captura esos campos para los protocolos nuevos a partir de agosto 2026, pero integrarlos al histórico de `RAW` sigue siendo manual.
 
-**Nota sobre límites de referencia**: el límite de PBA para Arsénico embebido en `LIM` (0.010 mg/L) reproduce el que citan los protocolos municipales, pero el texto vigente de la Ley PBA 11.820 (Anexo A) verificado en agosto 2026 indica 0.05 mg/L para ese parámetro. Se mantiene el valor de los protocolos por ahora — es una discrepancia real entre fuente primaria y práctica de laboratorio, no un error de carga, y conviene revisarla con la Municipalidad.
+**Nota sobre límites de referencia — Arsénico**: es el único parámetro con una discrepancia real entre normativas, así que `LIM.Arsénico` guarda **ambos** límites (`caa: 0.01`, `pba: 0.05`) y las vistas de Parámetros/Mapa/Normativa dibujan **las dos líneas de referencia**, no una sola. El texto vigente de la Ley PBA 11.820 (Anexo A) todavía dice 0.05 mg/L, sin actualizar, pero en la práctica la Provincia adhiere al valor que el Código Alimentario Argentino adoptó de la OMS (0.01 mg/L) — que es el que citan los propios protocolos municipales. Mostrar ambos límites, en vez de elegir uno, deja ver la brecha entre la norma escrita y la práctica real tal como es hoy.
 
 ## Diseño
 
@@ -53,18 +53,20 @@ Qué hace:
 
 Para activarlo hace falta un secret `GEMINI_API_KEY` en la configuración del repo (Settings → Secrets and variables → Actions) — se consigue gratis en [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
+**Estado (agosto 2026)**: la primera corrida completa de la Action funcionó de punta a punta — descargó los PDF nuevos de `analisis_2025`/`analisis_2026` que todavía no estaban en `manifest_historico.json`, y `extraer_datos.py` los procesó con Gemini, dejando ~250 filas en `protocolos/extraidos_pendientes.csv` (la gran mayoría con `confianza: alta`). Ese CSV está en el repo, pendiente del merge manual a `RAW`/`LIM` (ver Roadmap).
+
 ## Roadmap
 
-- **Mergear `extraidos_pendientes.csv` al histórico**: falta el paso (todavía manual) de revisar lo que junta la ingesta automática e incorporarlo a `RAW`/`LIM`.
-- **Backend propio (Cloudflare D1 + Worker)**: reemplazar el array `RAW` embebido y el `localStorage` de coordenadas por una base de datos real, siguiendo el mismo patrón que ya usan `ema-saladillo` y `purpleair-saladillo` — recién ahí tendría sentido que la ingesta escriba directo a la base en vez de a un CSV de staging.
-- **Fisicoquímica completa (Tabla I)**: pH, dureza, cloruros, sulfatos, color, turbiedad, olor, alcalinidad, sólidos disueltos, amonio, calcio, magnesio — están en los protocolos pero todavía no en `LIM`/`RAW`; requiere curar el CSV crudo (`COMPLETO.csv`) o esperar a que la ingesta automática junte suficientes protocolos nuevos con esos campos.
+- **Mergear `extraidos_pendientes.csv` al histórico**: 250 filas ya extraídas y en el repo, esperando revisión y carga a `RAW`/`LIM` — incluye ~13 parámetros fisicoquímicos nuevos (ver ítem siguiente) que hoy no tienen límite de referencia cargado.
+- **Fisicoquímica completa (Tabla I)**: pH, dureza, cloruros, sulfatos, color, turbiedad, olor, alcalinidad, sólidos disueltos, amonio, calcio, magnesio — aparecen en los protocolos y ya llegan en el CSV de la ingesta automática, pero todavía no tienen límite CAA/PBA cargado en `LIM`.
+- **Backend propio (Cloudflare D1 + Worker)**: reemplazar el array `RAW` embebido y el `localStorage` de coordenadas por una base de datos real, siguiendo el mismo patrón que ya usan `ema-saladillo` y `purpleair-saladillo`. Es el paso que habilitaría, más adelante, que la ingesta automática escriba directo a la base en vez de a un CSV de staging para revisión manual.
 - Deploy en Cloudflare Pages (`wrangler pages deploy . --project-name=agua-saladillo`) apuntado a `wq.lemeit.ar` — **ya en producción** desde agosto 2026.
 
 ## Red de monitoreo ambiental
 
 - **Meteorología** — [emas.lemeit.ar](https://emas.lemeit.ar)
 - **Calidad del aire** — [aq.lemeit.ar](https://aq.lemeit.ar)
-- **Calidad del agua** — este proyecto (en desarrollo)
+- **Calidad del agua** — este proyecto, [wq.lemeit.ar](https://wq.lemeit.ar)
 
 ## Proyecto educativo
 
