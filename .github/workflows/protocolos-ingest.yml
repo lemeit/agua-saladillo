@@ -1,0 +1,57 @@
+name: Ingesta de protocolos de agua (manual)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install requests beautifulsoup4
+
+      - name: Descargar PDFs nuevos
+        run: python scripts/descargar_protocolos.py
+
+      - name: Extraer datos con Gemini
+        run: python scripts/extraer_datos.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Commitear PDFs y datos extraídos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add protocolos/
+          if git diff --cached --quiet; then
+            echo "Sin cambios — no había protocolos nuevos."
+          else
+            NUEVOS=$(cat protocolos/_nuevos_ultima_corrida.json 2>/dev/null | python -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "?")
+            git commit -m "Ingesta automática: protocolos nuevos ($(date -u +%Y-%m-%d))" -m "$NUEVOS PDF nuevos descargados y procesados. Revisar protocolos/extraidos_pendientes.csv antes de integrar al dashboard."
+            git push
+          fi
+
+      - name: Resumen
+        if: always()
+        run: |
+          echo "### Resultado de la ingesta" >> $GITHUB_STEP_SUMMARY
+          if [ -f protocolos/_nuevos_ultima_corrida.json ]; then
+            echo "PDF nuevos descargados:" >> $GITHUB_STEP_SUMMARY
+            cat protocolos/_nuevos_ultima_corrida.json >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Revisar \`protocolos/extraidos_pendientes.csv\` y mergear a mano lo que corresponda a \`index.html\`." >> $GITHUB_STEP_SUMMARY
