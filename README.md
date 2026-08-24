@@ -17,18 +17,25 @@ Este dashboard existía como un archivo suelto (`docs/agua_saladillo.html`) dent
 - **Normativa**: tabla comparativa contra los límites del Código Alimentario Argentino (Cap. XII) y la Ley PBA 11.820.
 - **Ubicaciones** (panel de administración): permite cargar/editar coordenadas de los puntos de muestreo que todavía no las tienen.
 
-## Datos y estado actual
+## Datos y origen
 
 Por ahora es un **prototipo standalone**: un único archivo HTML sin build ni backend propio. Los registros (87 muestras, mayo 2025 – abril 2026, 52 puntos únicos) están embebidos como un array JS (`RAW`) dentro del propio `index.html`, y las coordenadas cargadas manualmente en el panel "Ubicaciones" se guardan en `localStorage` del navegador (no persisten entre dispositivos ni se comparten entre usuarios).
 
+Los valores salen de los protocolos de ensayo (análisis de agua) que la Municipalidad de Saladillo publica como PDF sueltos en su sitio:
+
+- [saladillo.gob.ar/?q=analisis_2025](https://www.saladillo.gob.ar/?q=analisis_2025) — ~60 protocolos
+- [saladillo.gob.ar/?q=analisis_2026](https://www.saladillo.gob.ar/?q=analisis_2026) — ~43 protocolos (se sigue subiendo material, sin frecuencia ni orden fijo)
+
+No hay tabla, índice ni nombres de archivo consistentes en ninguna de las dos páginas (algunos PDF se llaman `PROTOCOLO XXXXX`, otros `informe_1_N.pdf`, sin fecha en el nombre) — la carga a `RAW` fue manual, transcribiendo protocolo por protocolo. Es la fuente real, pero no una API ni nada remotamente automatizable tal como está publicada hoy.
+
+## Diseño
+
+Ya adopta el sistema de diseño compartido de [design.lemeit.ar](https://design.lemeit.ar) (`lemeit-theme.css` + `lemeit-common.js`): misma paleta y tipografía (JetBrains Mono) que EMA y AQ, header con badge **WQ**, selector de portales y footer versionado (`LemeitCommon.initSwitcher` / `renderFooter`). El resto de los componentes (tabs, tarjetas, tabla, panel de administración) mantiene su propio CSS local, igual que en los otros dos proyectos — solo las variables de color/tipografía están unificadas.
+
 ## Roadmap
 
-Ideas para evolucionar este proyecto al mismo nivel que EMA y AQ:
-
 - **Backend propio (Cloudflare D1 + Worker + GitHub Actions)**: reemplazar el array `RAW` embebido y el `localStorage` de coordenadas por una base de datos real, siguiendo el mismo patrón de ingesta que ya usan `ema-saladillo` y `purpleair-saladillo`.
-- **Adoptar el sistema de diseño compartido** (`lemeit-theme.css` / `lemeit-common.js` de design.lemeit.ar): hoy el dashboard usa su propia paleta oscura estilo GitHub (`--accent:#58a6ff`, tipografía `system-ui`), independiente de la identidad visual de EMA/AQ. Unificar tipografía, paleta y componentes (header, footer, badges) es el paso pendiente más importante antes de publicarlo en `wq.lemeit.ar`.
-- **Footer con versión + selector de portales**, igual que EMA y AQ (`LemeitCommon.renderFooter` / `initSwitcher`).
-- Favicon ya definido y aplicado: monograma **"WQ"** en teal `#4FB0C6`, mismo patrón que EMA (celeste) y AQ (naranja).
+- **Actualización de datos**: hoy es 100% manual. Una posibilidad a futuro es un job (GitHub Actions, cron mensual) que revise las páginas `analisis_2025`/`analisis_2026` del sitio municipal y avise si aparecieron PDF nuevos para transcribir — no hay forma de saber la frecuencia de publicación de antemano, así que por ahora esto queda como idea, no implementado.
 - Deploy en Cloudflare Pages (`wrangler pages deploy . --project-name=agua-saladillo`) apuntado a `wq.lemeit.ar`.
 
 ## Red de monitoreo ambiental
