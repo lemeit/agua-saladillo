@@ -30,7 +30,7 @@ PROTOCOLOS_DIR = ROOT / "protocolos"
 MANIFEST_PROCESADOS = PROTOCOLOS_DIR / "manifest_procesados.json"
 STAGING_CSV = PROTOCOLOS_DIR / "extraidos_pendientes.csv"
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/models/"
