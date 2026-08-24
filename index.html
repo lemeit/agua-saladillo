@@ -34,8 +34,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 a{color:var(--accent)}
 
 .hdr{background:var(--surf);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;justify-content:space-between;position:sticky;top:0;z-index:200}
-.hdr h1{font-size:15px;font-weight:600}
-.hdr p{font-size:11px;color:var(--muted)}
+.hdr h1{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr p{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logo{font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;background:var(--accent);padding:4px 7px;border-radius:5px;flex-shrink:0}
 .btn{background:var(--surf2);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -130,6 +130,15 @@ tr:hover td{background:var(--surf2)}
   .form2{grid-template-columns:1fr}
   #mapa-agua,#mapa-admin{height:260px}
   .fgrid{grid-template-columns:1fr 1fr}
+}
+
+/* Header compacto en mobile — mismo patrón que emas/aq: título en una sola
+   línea con ellipsis, subtítulo largo (fechas/normativa) oculto, para que
+   las tabs queden a la vista sin scrollear primero. */
+@media(max-width:640px){
+  .hdr{padding:8px 12px;gap:8px}
+  .hdr h1{font-size:13px}
+  .hdr p{display:none}
 }
 </style>
 </head>
