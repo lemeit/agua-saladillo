@@ -30,11 +30,15 @@ PROTOCOLOS_DIR = ROOT / "protocolos"
 MANIFEST_PROCESADOS = PROTOCOLOS_DIR / "manifest_procesados.json"
 STAGING_CSV = PROTOCOLOS_DIR / "extraidos_pendientes.csv"
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-# API "Interactions" (reemplazó a la vieja v1beta/models/{modelo}:generateContent en 2026).
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/interactions"
-GEMINI_HEADERS = {"x-goog-api-key": GEMINI_API_KEY, "Content-Type": "application/json"}
+# Endpoint clásico, confirmado real via GET /v1beta/models con la key real del usuario
+# (el "Interactions API" de un intento anterior resultó ser una alucinación de un doc mal leído).
+GEMINI_URL = (
+    f"https://generativelanguage.googleapis.com/v1beta/models/"
+    f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+)
+GEMINI_HEADERS = {"Content-Type": "application/json"}
 
 PROMPT = """Sos un extractor de datos para protocolos de análisis de agua potable \
 publicados por un municipio argentino. Te paso UN PDF con UN protocolo/informe de \
@@ -90,15 +94,16 @@ def listar_pdfs_pendientes(procesados):
     return pendientes
 
 
-def extraer_con_gemini(pdf_path, intentos=3):
+def extraer_con_gemini(pdf_path, intentos=5):
     data_b64 = base64.b64encode(pdf_path.read_bytes()).decode("ascii")
     body = {
-        "model": GEMINI_MODEL,
-        "input": [
-            {"type": "document", "data": data_b64, "mime_type": "application/pdf"},
-            {"type": "text", "text": PROMPT},
-        ],
-        "response_format": {"type": "text", "mime_type": "application/json"},
+        "contents": [{
+            "parts": [
+                {"inline_data": {"mime_type": "application/pdf", "data": data_b64}},
+                {"text": PROMPT},
+            ]
+        }],
+        "generationConfig": {"responseMimeType": "application/json"},
     }
     ultimo_error = None
     for intento in range(1, intentos + 1):
@@ -109,9 +114,17 @@ def extraer_con_gemini(pdf_path, intentos=3):
                 print(f"  Rate limit, esperando {espera}s...")
                 time.sleep(espera)
                 continue
+            if r.status_code == 503:
+                espera = 30 * intento
+                print(f"  Modelo con alta demanda (503), esperando {espera}s...")
+                time.sleep(espera)
+                continue
+            if r.status_code == 404:
+                # Ayuda a diagnosticar rápido si el modelo/endpoint volviera a cambiar.
+                raise RuntimeError(f"404 en {GEMINI_URL.split('?')[0]} — revisar con GET /v1beta/models?key=... si el modelo sigue existiendo y soporta generateContent. Respuesta: {r.text[:300]}")
             r.raise_for_status()
             payload = r.json()
-            texto = payload["output_text"]
+            texto = payload["candidates"][0]["content"]["parts"][0]["text"]
             return json.loads(texto)
         except Exception as e:  # noqa: BLE001 - queremos capturar cualquier falla y marcar revisión manual
             ultimo_error = e
