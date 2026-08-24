@@ -28,6 +28,14 @@ Los valores salen de los protocolos de ensayo (análisis de agua) que la Municip
 
 No hay tabla, índice ni nombres de archivo consistentes en ninguna de las dos páginas (algunos PDF se llaman `PROTOCOLO XXXXX`, otros `informe_1_N.pdf`, sin fecha en el nombre) — la carga a `RAW` fue manual, transcribiendo protocolo por protocolo. Es la fuente real, pero no una API ni nada remotamente automatizable tal como está publicada hoy.
 
+### Cobertura de parámetros (agosto 2026)
+
+`RAW` incluye hoy los 30 parámetros presentes en los protocolos transcriptos (metales pesados, plaguicidas organoclorados, trihalometanos, VOCs y bacteriología), no solo los 9 originales. `LIM` (límites CAA/PBA) cubre 31 parámetros — las vistas "Parámetros" y "Mapa" son genéricas y muestran cualquier parámetro presente en `LIM` sin cambios de código. La vista "Tabla" sigue mostrando un subconjunto curado de columnas por legibilidad; el botón **⬇ CSV** exporta el dataset completo (metadata + los 31 parámetros + bacteriología).
+
+Pendiente (no incluido aún): metadata completa por protocolo (laboratorio, número de protocolo, cadena de custodia, hora de extracción) — los datos actuales solo tienen fuente, fecha y archivo de origen, porque la extracción CSV usada como base no capturó esos campos. Se sumará cuando se implemente la ingesta automatizada (ver Roadmap).
+
+**Nota sobre límites de referencia**: el límite de PBA para Arsénico embebido en `LIM` (0.010 mg/L) reproduce el que citan los protocolos municipales, pero el texto vigente de la Ley PBA 11.820 (Anexo A) verificado en agosto 2026 indica 0.05 mg/L para ese parámetro. Se mantiene el valor de los protocolos por ahora — es una discrepancia real entre fuente primaria y práctica de laboratorio, no un error de carga, y conviene revisarla con la Municipalidad.
+
 ## Diseño
 
 Ya adopta el sistema de diseño compartido de [design.lemeit.ar](https://design.lemeit.ar) (`lemeit-theme.css` + `lemeit-common.js`): misma paleta y tipografía (JetBrains Mono) que EMA y AQ, header con badge **WQ**, selector de portales y footer versionado (`LemeitCommon.initSwitcher` / `renderFooter`). El resto de los componentes (tabs, tarjetas, tabla, panel de administración) mantiene su propio CSS local, igual que en los otros dos proyectos — solo las variables de color/tipografía están unificadas.
