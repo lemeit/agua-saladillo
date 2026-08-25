@@ -625,11 +625,17 @@ function toggleTheme() {
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
+// Pestañas que no leen del dataset filtrado (DF) — muestran datos fijos
+// (LIM completo, RAW sin filtrar, o nada) — el bloque de filtros globales no
+// tiene efecto ahí, así que se oculta para no sugerir que sí filtra algo.
+const SIN_FILTROS = new Set(['acerca','normativa','admin']);
+
 function showP(id, el) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
+  document.getElementById('fglobal').style.display = SIN_FILTROS.has(id) ? 'none' : '';
   if(id==='mapa') setTimeout(()=>initMapaAgua(),80);
   if(id==='admin') setTimeout(()=>initMapaAdmin(),80);
   if(id==='parametros') renderParam();
