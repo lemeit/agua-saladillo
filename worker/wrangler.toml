@@ -1,0 +1,8 @@
+name = "agua-saladillo-api"
+main = "src/index.js"
+compatibility_date = "2026-08-19"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "agua-saladillo"
+database_id = "a1021d31-d0e3-4836-b6a4-84b90be26897"
