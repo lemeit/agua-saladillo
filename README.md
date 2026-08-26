@@ -15,16 +15,18 @@ Este dashboard existía como un archivo suelto (`docs/agua_saladillo.html`) dent
 - **Mapa**: puntos de muestreo geolocalizados (Leaflet), con ficha de detalle por punto.
 - **Tabla**: histórico completo, ordenable por columna.
 - **Normativa**: tabla comparativa contra los límites del Código Alimentario Argentino (Cap. XII) y la Ley PBA 11.820.
-- **Ubicaciones** (panel de administración): permite cargar/editar coordenadas de los puntos de muestreo que todavía no las tienen.
+- **Ubicaciones** (panel de administración, oculto salvo `?admin` en la URL): permite cargar/editar coordenadas de los puntos de muestreo. Los cambios se guardan en Cloudflare D1 vía Worker (`worker/`), protegidos por clave de administrador.
 
 ## Datos y origen
 
-Por ahora es un **prototipo standalone**: un único archivo HTML sin build ni backend propio. Los registros (87 muestras, mayo 2025 – abril 2026, 52 puntos únicos) están embebidos como un array JS (`RAW`) dentro del propio `index.html`, y las coordenadas cargadas manualmente en el panel "Ubicaciones" se guardan en `localStorage` del navegador (no persisten entre dispositivos ni se comparten entre usuarios).
+Los registros de muestras (87 transcriptas a mano + las incorporadas por la ingesta automática, ver abajo) siguen siendo un **array/objeto JS embebido** (`RAW`, `LIM`) dentro del propio `index.html`, sin build ni backend propio — ver Roadmap para la migración pendiente de esa parte a Cloudflare D1.
 
-Los valores salen de los protocolos de ensayo (análisis de agua) que la Municipalidad de Saladillo publica como PDF sueltos en su sitio:
+Las coordenadas de los puntos de muestreo, en cambio, dejaron de vivir en `localStorage`: desde agosto de 2026 se sirven desde una base Cloudflare D1 a través de un Worker propio (`worker/`), con el mismo patrón que ya usan `ema-saladillo` y `purpleair-saladillo`. Son públicas para lectura (`GET /api/coords`, sin esto no se podría dibujar el mapa), pero solo se editan desde el panel "⚙ Ubicaciones" con una clave de administrador que valida el Worker en el servidor (`POST /api/coords`, header `X-Admin-Key` — sin la clave correcta el guardado se rechaza con 401, nunca se guarda nada "a medias"). El panel además está oculto de la navegación salvo que se entre con `?admin` en la URL — eso solo evita que lo encuentre un visitante casual, la protección real es la clave que valida el Worker, no el ocultamiento.
 
-- [saladillo.gob.ar/?q=analisis_2025](https://www.saladillo.gob.ar/?q=analisis_2025) — ~60 protocolos
-- [saladillo.gob.ar/?q=analisis_2026](https://www.saladillo.gob.ar/?q=analisis_2026) — ~43 protocolos (se sigue subiendo material, sin frecuencia ni orden fijo)
+Los valores salen de los protocolos de ensayo (análisis de agua) que la Municipalidad de Saladillo publica como PDF sueltos en su sitio. El punto de entrada estable es [saladillo.gob.ar/servicios_sanitarios](https://www.saladillo.gob.ar/servicios_sanitarios) (Dirección de Servicios Sanitarios y Gestión Ambiental), desde donde se llega a los listados por año:
+
+- ANÁLISIS 2025 — ~60 protocolos
+- ANÁLISIS 2026 — ~43 protocolos (se sigue subiendo material, sin frecuencia ni orden fijo)
 
 No hay tabla, índice ni nombres de archivo consistentes en ninguna de las dos páginas (algunos PDF se llaman `PROTOCOLO XXXXX`, otros `informe_1_N.pdf`, sin fecha en el nombre) — la carga a `RAW` fue manual, transcribiendo protocolo por protocolo. Es la fuente real, pero no una API ni nada remotamente automatizable tal como está publicada hoy.
 
@@ -60,8 +62,8 @@ Para activarlo hace falta un secret `GEMINI_API_KEY` en la configuración del re
 ## Roadmap
 
 - **Fisicoquímica completa (Tabla I)** — ✅ hecho en agosto 2026: pH, dureza, cloruros, sulfatos, color, turbiedad, olor, sólidos disueltos, amonio, aluminio, zinc, sodio, calcio, magnesio y varios orgánicos ya tienen límite CAA/PBA cargado en `LIM` (ver "Cobertura de parámetros" arriba). Pendiente: alcalinidad (no se encontró un límite normativo confiable en la investigación, se descartó por ahora esa columna del merge).
-- **Backend propio (Cloudflare D1 + Worker)**: reemplazar el array `RAW` embebido y el `localStorage` de coordenadas por una base de datos real, siguiendo el mismo patrón que ya usan `ema-saladillo` y `purpleair-saladillo`. Es el paso que habilitaría, más adelante, que la ingesta automática escriba directo a la base en vez de a un CSV de staging para revisión manual.
-- **Panel "⚙ Ubicaciones" sin autenticación**: cualquier visitante puede abrirlo y "guardar" coordenadas — hoy es de bajo riesgo real porque escribe solo en `localStorage` del propio navegador (no toca datos compartidos ni el dataset público), pero conviene ocultarlo detrás de algún gate simple, y pasa a ser no negociable cuando se migre a un backend real (ítem anterior).
+- **Coordenadas en Cloudflare D1 + Worker, protegidas por clave** — ✅ hecho en agosto 2026: reemplaza el `localStorage` de coordenadas por una base compartida (`worker/`, `d1/schema.sql`), de solo-lectura pública y escritura protegida por `ADMIN_KEY`. El panel "⚙ Ubicaciones" además quedó oculto de la navegación salvo `?admin` en la URL.
+- **Backend propio para `RAW`/`LIM` (Cloudflare D1 + Worker)**: reemplazar el array/objeto `RAW`/`LIM` embebido por una base de datos real, siguiendo el mismo patrón que ya usan `ema-saladillo` y `purpleair-saladillo` (y que las coordenadas ya usan desde el ítem anterior). Es el paso que habilitaría, más adelante, que la ingesta automática escriba directo a la base en vez de a un CSV de staging para revisión manual.
 - Deploy en Cloudflare Pages (`wrangler pages deploy . --project-name=agua-saladillo`) apuntado a `wq.lemeit.ar` — **ya en producción** desde agosto 2026.
 
 ## Red de monitoreo ambiental
