@@ -147,8 +147,8 @@ tr:hover td{background:var(--surf2)}
 <div class="hdr">
   <div class="logo">WQ</div>
   <div style="flex:1;min-width:0">
-    <h1>Calidad del Agua — Saladillo</h1>
-    <p>Monitoreo oficial · Municipalidad · Mayo 2025 – Abr 2026 · CAA Cap. XII · Ley PBA 11.820</p>
+    <h1>Agua Saladillo</h1>
+    <p>Calidad del agua de Saladillo</p>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
     <div class="lm-switcher" id="lm-switcher">
@@ -1072,6 +1072,11 @@ if (window.LemeitCommon) {
   LemeitCommon.renderFooter(document.getElementById("lm-footer"), {
     version: APP_VERSION,
     extra: 'datos de <a href="https://www.saladillo.gob.ar/servicios_sanitarios" target="_blank">Municipalidad de Saladillo</a>',
+    // La fuente real de los datos (los protocolos PDF publicados por el
+    // municipio) — no un sponsor, es la autoría de la información en sí.
+    logos: [
+      { href: "https://www.saladillo.gob.ar/servicios_sanitarios", src: "https://design.lemeit.ar/logos/munisaladillo.png", alt: "Municipalidad de Saladillo", title: "Municipalidad de Saladillo — fuente de los datos" },
+    ],
   });
 }
 
