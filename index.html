@@ -30,7 +30,8 @@
   --text:#2A211A;--muted:#6B5C4E;--accent:#9B3D00;
   --green:#4C7A3D;--yellow:#A6720A;--red:#A33131;--orange:#A6720A;
 }
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;font-size:14px;line-height:1.6;padding-bottom:40px}
+html{overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;font-size:14px;line-height:1.6;padding-bottom:40px;overflow-x:hidden}
 a{color:var(--accent)}
 
 .hdr{background:var(--surf);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;justify-content:space-between;position:sticky;top:0;z-index:200}
@@ -1067,7 +1068,7 @@ function resetCoords(){
   location.reload();
 }
 
-const APP_VERSION = "v1.0.4";
+const APP_VERSION = "v1.0.5";
 
 if (window.LemeitCommon) {
   LemeitCommon.initSwitcher("wq");
