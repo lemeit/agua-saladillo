@@ -44,6 +44,10 @@ Pendiente (no incluido aún): metadata completa por protocolo (laboratorio, cade
 
 Ya adopta el sistema de diseño compartido de [design.lemeit.ar](https://design.lemeit.ar) (`lemeit-theme.css` + `lemeit-common.js`): misma paleta y tipografía (JetBrains Mono) que EMA y AQ, header con badge **WQ**, selector de portales y footer versionado (`LemeitCommon.initSwitcher` / `renderFooter`). El resto de los componentes (tabs, tarjetas, tabla, panel de administración) mantiene su propio CSS local, igual que en los otros dos proyectos — solo las variables de color/tipografía están unificadas.
 
+El footer incluye el logo de la Municipalidad de Saladillo (`renderFooter({logos: [...]})`), ya que es la fuente real de los datos (protocolos de ensayo que publica la Dirección de Servicios Sanitarios y Gestión Ambiental — ver "Datos y origen" arriba).
+
+**Mapa**: los tiles se piden al propio Worker (`GET /tiles/:style/:z/:x/:y{@2x}.png`, `style` = `light_all` \| `dark_all`), que actúa de proxy hacia CARTO Basemaps agregando la API key del secret `CARTO_API_KEY` del lado del servidor — así la key nunca queda expuesta en el HTML público. Configurar con `npx wrangler secret put CARTO_API_KEY` desde `worker/`. Key gratuita (tope 5M tiles/mes) en [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey). Se usa tanto en el mapa público ("Mapa") como en el panel de administración ("⚙ Ubicaciones").
+
 ## Ingesta automática de protocolos
 
 Desde agosto de 2026 hay un GitHub Action (`.github/workflows/protocolos-ingest.yml`) que automatiza la parte más pesada de bajar y leer protocolos nuevos — **se dispara a mano** desde la pestaña Actions del repo (`workflow_dispatch`), no corre solo por cron, para mantener control sobre cuándo se ejecuta.
@@ -58,6 +62,16 @@ Qué hace:
 Para activarlo hace falta un secret `GEMINI_API_KEY` en la configuración del repo (Settings → Secrets and variables → Actions) — se consigue gratis en [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
 **Estado (agosto 2026)**: la primera corrida completa de la Action funcionó de punta a punta — descargó 18 PDF nuevos de `analisis_2025`/`analisis_2026` que todavía no estaban en `manifest_historico.json`, y `extraer_datos.py` los procesó con Gemini (250 filas extraídas, la gran mayoría con `confianza: alta`). Ese resultado ya se revisó y se mergeó a mano a `RAW`/`LIM`: de los 18 PDF, 3 pares resultaron ser sub-informes complementarios de una misma toma de muestra (mismo protocolo/fuente/fecha, cero superposición de parámetros — ej. un PDF con fisicoquímica y otro con bacteriología) y se fusionaron en una sola fila; 1 PDF no era un protocolo real (`anexos_ley_pcial._no_11820.pdf`, ya autodetectado por el script con `confianza: baja`) y se descartó. Resultado: 14 muestras nuevas, `protocolos/extraidos_pendientes.csv` quedó vacío (todo revisado).
+
+## Variables de entorno / secrets
+
+**Worker** (`wrangler secret put`, dentro de `worker/`):
+
+```
+ADMIN_KEY       # valida el header X-Admin-Key en POST /api/coords (panel "⚙ Ubicaciones")
+CARTO_API_KEY   # API key gratuita de CARTO Basemaps (tope 5M tiles/mes), para el proxy
+                # de tiles del mapa (GET /tiles/...) — ver "Diseño" arriba.
+```
 
 ## Roadmap
 

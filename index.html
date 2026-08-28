@@ -892,10 +892,10 @@ let aguaM=[];
 function initMapaAgua(){
   if(mAgua){renderMapa();return;}
   mAgua=L.map('mapa-agua').setView([-35.638,-59.788],13);
-  // CARTO dio de baja el acceso sin API key a basemaps.cartocdn.com — se usa
-  // el basemap gris de Esri (sin key) mientras se resuelve el alta a CARTO.
-  L.tileLayer(dark?'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}':'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    {attribution:'Tiles © Esri',maxZoom:16}).addTo(mAgua);
+  // Los tiles de CARTO ahora exigen API key — se le piden al Worker propio
+  // (proxy en /tiles/...), que agrega la key del lado del servidor.
+  L.tileLayer(dark?`${API_BASE}/tiles/dark_all/{z}/{x}/{y}{r}.png`:`${API_BASE}/tiles/light_all/{z}/{x}/{y}{r}.png`,
+    {attribution:'© OpenStreetMap contributors © CARTO',maxZoom:19}).addTo(mAgua);
   renderMapa();
 }
 function renderMapa(){
@@ -961,7 +961,7 @@ function exportCSV(){
 function initMapaAdmin(){
   if(mAdmin){renderAMarkers();return;}
   mAdmin=L.map('mapa-admin').setView([-35.638,-59.788],13);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:16}).addTo(mAdmin);
+  L.tileLayer(`${API_BASE}/tiles/light_all/{z}/{x}/{y}{r}.png`,{attribution:'© OpenStreetMap contributors © CARTO',maxZoom:19}).addTo(mAdmin);
   mAdmin.on('click',e=>{
     if(editando){
       document.getElementById('e-lat').value=e.latlng.lat.toFixed(6);
@@ -1067,7 +1067,7 @@ function resetCoords(){
   location.reload();
 }
 
-const APP_VERSION = "v1.0.2";
+const APP_VERSION = "v1.0.4";
 
 if (window.LemeitCommon) {
   LemeitCommon.initSwitcher("wq");
