@@ -1,5 +1,7 @@
 # Calidad del Agua — Saladillo
 
+[![sitio](https://img.shields.io/badge/sitio-wq.lemeit.ar-009688?style=flat-square)](https://wq.lemeit.ar) [![docs](https://img.shields.io/badge/docs-wiki.lemeit.ar-009688?style=flat-square)](https://wiki.lemeit.ar/red-ambiental/03-agua-saladillo/) [![API](https://img.shields.io/badge/API-parcial-FF5722?style=flat-square)](https://wiki.lemeit.ar/red-ambiental/03-agua-saladillo/#api-existente-parcial) [![licencia](https://img.shields.io/badge/licencia-MIT-009688?style=flat-square)](#licencia)
+
 Monitoreo de calidad de agua de red en Saladillo, Buenos Aires, Argentina: arsénico, nitratos, nitritos, fluoruro, metales pesados y parámetros bacteriológicos (coliformes totales, *Escherichia coli*, *Pseudomona aeruginosa*) sobre decenas de puntos de la red municipal (bombas, escuelas, jardines de infantes, domicilios). Publicado en [wq.lemeit.ar](https://wq.lemeit.ar).
 
 Es uno de tres proyectos de monitoreo ambiental que comparten la misma infraestructura de Cloudflare (Pages + Workers + D1), pensados para integrarse a futuro: [emas.lemeit.ar](https://emas.lemeit.ar) (meteorología), [aq.lemeit.ar](https://aq.lemeit.ar) (calidad del aire, sensores PurpleAir) y este (calidad del agua).
