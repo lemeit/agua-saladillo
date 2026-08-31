@@ -4,6 +4,8 @@ Monitoreo de calidad de agua de red en Saladillo, Buenos Aires, Argentina: arsé
 
 Es uno de tres proyectos de monitoreo ambiental que comparten la misma infraestructura de Cloudflare (Pages + Workers + D1), pensados para integrarse a futuro: [emas.lemeit.ar](https://emas.lemeit.ar) (meteorología), [aq.lemeit.ar](https://aq.lemeit.ar) (calidad del aire, sensores PurpleAir) y este (calidad del agua).
 
+📚 Documentación técnica completa, guías de uso de la API y bitácora de los tres portales: [wiki.lemeit.ar](https://wiki.lemeit.ar).
+
 ## Origen
 
 Este dashboard existía como un archivo suelto (`docs/agua_saladillo.html`) dentro del repo de `ema-saladillo`, sin repositorio propio. Se migró a este repo dedicado en agosto de 2026 para poder evolucionarlo de forma independiente, igual que los otros dos proyectos hermanos.
